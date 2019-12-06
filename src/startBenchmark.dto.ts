@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class BenchmarkIdDto {
+export class StartBenchmarkDto {
   @IsNotEmpty()
   readonly benchmarkId: string;
 }

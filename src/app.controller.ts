@@ -1,22 +1,35 @@
-import { Controller, Get, Post, Logger, Body } from '@nestjs/common';
+import { Controller, Post, Logger, Body, Param } from '@nestjs/common';
 import { AppService } from './app.service';
 import { v4 as uuidV4 } from 'uuid';
-import { RankDto } from './rank.dto';
-import { BenchmarkIdDto } from './benchmarkId.dto';
-import { EndResponseDto } from './endResponse.dto';
+import { EndRequestDto as EndBenchmarkDto } from './endBenchmark.dto';
+import { StartBenchmarkDto } from './startBenchmark.dto';
+import { EndBenchmarkResponseDto } from './endBenchmarkResponse.dto';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get('/init')
-  getUuidV4(): { benchmarkId: string } {
-    return { benchmarkId: uuidV4() };
+  @Post('/team')
+  createTeam(): any {
+    // TODO: put teamId into dynamodb
+
+    return {
+      teamId: uuidV4(),
+    };
   }
 
-  @Post('/start')
+  @Post('/init/:teamId')
+  getUuidV4(
+    @Param() param: { teamId: string },
+  ): { teamId: string; benchmarkId: string } {
+    const benchmarkId = uuidV4();
+    // put benchmarkId into dynamodb
+    return { teamId: param.teamId, benchmarkId };
+  }
+
+  @Post('/start/:benchmarkId')
   start(
-    @Body() param: BenchmarkIdDto,
+    @Param() param: StartBenchmarkDto,
   ): { message: string; benchmarkId: string } {
     // TODO: invoke requester
 
@@ -27,15 +40,16 @@ export class AppController {
   }
 
   @Post('/end/:benchmarkId')
-  submitRanking(@Body() rankDto: RankDto): EndResponseDto {
-    Logger.log(rankDto);
+  submitRanking(
+    @Body() endBenchmarkDto: EndBenchmarkDto,
+  ): EndBenchmarkResponseDto {
+    Logger.log(endBenchmarkDto);
 
     // TODO: 答えと照合
 
     // TODO: 点数計算
 
-    const res = new EndResponseDto();
-    res.ranks = rankDto.ranks;
+    const res = new EndBenchmarkResponseDto();
     res.score = 100;
     return res;
   }
